@@ -13,7 +13,7 @@ entrenamiento = "dataMosquitos/Train"
 validacion = "dataMosquitos/Test"
 
 #Definir los hiperparámetros
-epocas = 150
+epocas = 500
 altura,anchura = 50,50
 batch_size = 4
 #Definir la profundidad de la red neuronal convolucional
@@ -63,7 +63,7 @@ CNN.compile(loss="categorical_crossentropy",optimizer="adam",metrics=["acc","mse
 #Entrenar la red neuronal convolucional
 historico = CNN.fit(imagenes_entrenamiento,validation_data=imagenes_validacion,epochs=epocas,verbose=1)
 #Guardar el archivo del modelo: arquitectura, pesos y configuración
-CNN.save('modelo_MosquitosROBUSTO.keras')
+CNN.save('modelo_MosquitosROBUSTO500.keras')
 # Crear una figura con dos subgráficas
 plt.figure(figsize=(12, 5))
 
