@@ -3,8 +3,10 @@ import os
 import numpy as np
 import tkinter as tk
 from tkinter import filedialog, messagebox
+
 from tensorflow.keras.utils import load_img,img_to_array
 from keras.models import load_model
+
 from PIL import Image, ImageTk
 
 # Bloqueamos errores de sistema

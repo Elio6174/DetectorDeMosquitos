@@ -9,11 +9,11 @@ from keras.layers import Convolution2D,MaxPooling2D
 
 #Ruta de las imágenes
 
-entrenamiento = "archive/train"
-validacion = "archive/val"
+entrenamiento = "dataMosquitos/Train"
+validacion = "dataMosquitos/Test"
 
 #Definir los hiperparámetros
-epocas = 10
+epocas = 150
 altura,anchura = 50,50
 batch_size = 4
 #Definir la profundidad de la red neuronal convolucional
@@ -50,9 +50,9 @@ CNN.add(Flatten())
 
 #Conectar con un perceptron multicapa (MLP)
 #Primera capa oculta
-CNN.add(Dense(255,activation="relu"))
+CNN.add(Dense(1000,activation="relu"))
 #Segunda capa oculta
-CNN.add(Dense(255,activation="relu"))
+CNN.add(Dense(1000,activation="relu"))
 #Apagar un % de neuronas
 CNN.add(Dropout(0.5))
 #Capa de salida
@@ -63,7 +63,7 @@ CNN.compile(loss="categorical_crossentropy",optimizer="adam",metrics=["acc","mse
 #Entrenar la red neuronal convolucional
 historico = CNN.fit(imagenes_entrenamiento,validation_data=imagenes_validacion,epochs=epocas,verbose=1)
 #Guardar el archivo del modelo: arquitectura, pesos y configuración
-CNN.save('modelo_CatDog.keras')
+CNN.save('modelo_MosquitosROBUSTO.keras')
 # Crear una figura con dos subgráficas
 plt.figure(figsize=(12, 5))
 

@@ -1,9 +1,8 @@
 <div align="center">
-    <h1>Contador de semillas con redes convolucionales</h1>
+    <h1>Detector de mosquitos con redes convolucionales</h1>
 </div>
 
-<img src="imgs/IMG_20260408_122741.jpg" width="300">
-
+<img src="imgs/imagen.png" width="300">
 
 # Requisitos
 Version de python usada: [Python 3.11.9](https://www.python.org/downloads/release/python-3119/)
@@ -25,7 +24,20 @@ Para no modificar la version de python instalada en tu sistma puedes hacer uso d
 python -m venv env
 ```
 
-para activar el entorno virutal y poder instalar las librerias necesarias ejecuta
+para activar el entorno virutal y poder instalar las librerias necesarias ejecutar:
+
+Windows
 ```
 ./env/Scripts/Activate.ps1
 ```
+Linux
+```
+source env/bin/activate
+```
+
+
+
+## Codigo
+El codigo de entrenamiento de la red se encuentra en el archivo ```entrenamientoMosquitos.py```
+
+El codigo de validacion del modelo se encuentra en el archivo ```validacionMosquitos.py```
