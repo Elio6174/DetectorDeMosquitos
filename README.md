@@ -1,8 +1,12 @@
 <div align="center">
-    <h1>Contador de semillas con redes convolucionales</h1>
+    <h1>Detector de mosquitos con redes convolucionales</h1>
 </div>
 
-<img src="imgs/IMG_20260408_122741.jpg" width="300">
+<img src="imgs/12.jpg" width="300">
+
+<div align="right">
+    <h1>Peligroso</h1>
+</div>
 
 
 # Requisitos
