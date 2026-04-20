@@ -1,25 +1,24 @@
 import sys
 import os
 import numpy as np
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from PIL import Image, ImageTk
 
 # Bloqueamos errores de sistema
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 import tensorflow as tf
 from tensorflow import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Activation, Convolution2D, MaxPooling2D
-from PIL import Image
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog
-from PyQt5.QtGui import QPixmap, QFont
-from PyQt5.QtCore import Qt
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Activation, Conv2D, MaxPooling2D
 
-class MosquitoApp(QWidget):
+class MosquitoApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Clasificador UPEMOR 8-C")
-        self.setGeometry(100, 100, 450, 650)
-        self.setStyleSheet("background-color: #121212; color: white;")
+        self.title("Clasificador UPEMOR 8-C")
+        self.geometry("500x750")
+        self.configure(bg="#121212")
         
         # Construir el modelo desde cero con la arquitectura conocida
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -57,10 +56,10 @@ class MosquitoApp(QWidget):
             size_pooling = (2, 2)
             
             model = Sequential()
-            model.add(Convolution2D(kernels1, kernel1_size, padding="same", 
+            model.add(Conv2D(kernels1, kernel1_size, padding="same", 
                                    input_shape=(altura, anchura, 3), activation="relu"))
             model.add(MaxPooling2D(pool_size=size_pooling))
-            model.add(Convolution2D(kernels2, kernel2_size, padding="same", activation="relu"))
+            model.add(Conv2D(kernels2, kernel2_size, padding="same", activation="relu"))
             model.add(MaxPooling2D(pool_size=size_pooling))
             model.add(Flatten())
             model.add(Dense(1000, activation="relu"))
@@ -84,35 +83,51 @@ class MosquitoApp(QWidget):
             return None
 
     def init_ui(self):
-        layout = QVBoxLayout()
-        lbl = QLabel("Detector de Mosquitos")
-        lbl.setFont(QFont("Arial", 20, QFont.Bold))
-        lbl.setAlignment(Qt.AlignCenter)
-        layout.addWidget(lbl)
+        # Frame principal
+        main_frame = tk.Frame(self, bg="#121212")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Título
+        title_label = tk.Label(main_frame, text="Detector de Mosquitos", 
+                               font=("Arial", 20, "bold"), bg="#121212", fg="white")
+        title_label.pack(pady=10)
 
-        self.lbl_img = QLabel("Inserta la foto aquí")
-        self.lbl_img.setFixedSize(380, 380)
-        self.lbl_img.setStyleSheet("border: 2px solid #0078d4; background: #1e1e1e;")
-        self.lbl_img.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.lbl_img, alignment=Qt.AlignCenter)
+        # Frame para la imagen
+        img_frame = tk.Frame(main_frame, bg="#1e1e1e", relief=tk.SOLID, bd=2)
+        img_frame.pack(pady=10)
+        
+        self.lbl_img = tk.Label(img_frame, text="Inserta la foto aquí", 
+                               bg="#1e1e1e", fg="white", width=38, height=19, 
+                               font=("Arial", 10))
+        self.lbl_img.pack(padx=5, pady=5)
+        self.img_photo = None
 
-        btn = QPushButton("SELECCIONAR IMAGEN")
-        btn.setFixedHeight(50)
-        btn.setStyleSheet("background: #0078d4; font-weight: bold; border-radius: 8px;")
-        btn.clicked.connect(self.abrir)
-        layout.addWidget(btn)
+        # Botón para seleccionar imagen
+        btn = tk.Button(main_frame, text="SELECCIONAR IMAGEN", command=self.abrir,
+                       bg="#0078d4", fg="white", font=("Arial", 12, "bold"),
+                       height=2, cursor="hand2")
+        btn.pack(fill=tk.X, pady=10)
 
-        self.lbl_res = QLabel("Esperando imagen...")
-        self.lbl_res.setFont(QFont("Arial", 16))
-        self.lbl_res.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.lbl_res)
-        self.setLayout(layout)
+        # Etiqueta para resultado
+        self.lbl_res = tk.Label(main_frame, text="Esperando imagen...", 
+                               font=("Arial", 16, "bold"), bg="#121212", fg="white")
+        self.lbl_res.pack(pady=20)
 
     def abrir(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Abrir", "", "Imágenes (*.jpg *.png *.jpeg)")
+        path = filedialog.askopenfilename(
+            title="Seleccionar imagen",
+            filetypes=[("Imágenes", "*.jpg *.png *.jpeg"), ("Todos", "*.*")]
+        )
         if path:
-            self.lbl_img.setPixmap(QPixmap(path).scaled(380, 380, Qt.KeepAspectRatio))
-            self.predecir(path)
+            try:
+                # Cargar y mostrar la imagen
+                img = Image.open(path)
+                img.thumbnail((380, 380))
+                self.img_photo = ImageTk.PhotoImage(img)
+                self.lbl_img.config(image=self.img_photo, text="")
+                self.predecir(path)
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo cargar la imagen: {str(e)}")
 
     def predecir(self, path):
         if not self.model: return
@@ -129,48 +144,26 @@ class MosquitoApp(QWidget):
             clases = ["Aedes Aegypti", "Anopheles", "Culex"]
             nombre_mosquito = clases[idx]
             
-            # Obtener información de peligrosidad
-            info_peligro = self._get_mosquito_danger_info(nombre_mosquito)
+            # Clasificar como peligroso o no peligroso
+            peligrosos = ["Aedes Aegypti", "Anopheles"]
+            es_peligroso = nombre_mosquito in peligrosos
             
-            # Mostrar solo el nivel de peligro y enfermedades
-            resultado_texto = info_peligro['nivel'] + "\n\n"
-            resultado_texto += f"Enfermedades:\n{info_peligro['enfermedades']}"
+            # Mostrar resultado
+            if es_peligroso:
+                resultado_texto = "🔴 PELIGROSO"
+                color = "#ff0000"  # Rojo
+            else:
+                resultado_texto = "🟢 NO PELIGROSO"
+                color = "#00ff00"  # Verde
             
-            self.lbl_res.setText(resultado_texto)
-            self.lbl_res.setStyleSheet(f"color: {info_peligro['color']}; font-weight: bold;")
+            self.lbl_res.config(text=resultado_texto, fg=color)
         except Exception as e:
             print(f"Error: {e}")
-            self.lbl_res.setText(f"Error en predicción: {str(e)}")
-            self.lbl_res.setStyleSheet("color: #ff0000; font-weight: bold;")
+            self.lbl_res.config(text=f"Error en predicción: {str(e)}", fg="#ff0000")
+            messagebox.showerror("Error", f"Error en predicción: {str(e)}")
 
-    def _get_mosquito_danger_info(self, nombre_mosquito):
-        """Retorna información de peligrosidad y enfermedades para cada tipo de mosquito"""
-        mosquito_info = {
-            "Aedes Aegypti": {
-                "nivel": "⚠️ MUY PELIGROSO ⚠️",
-                "enfermedades": "• Dengue\n• Zika\n• Chikungunya\n• Fiebre Amarilla",
-                "color": "#ff0000"  # Rojo
-            },
-            "Anopheles": {
-                "nivel": "⚠️ MUY PELIGROSO ⚠️",
-                "enfermedades": "• Malaria\n• Fiebre Paratifoidea",
-                "color": "#ff0000"  # Rojo
-            },
-            "Culex": {
-                "nivel": "⚠️ PELIGROSO ⚠️",
-                "enfermedades": "• Virus del Nilo Occidental\n• Encefalitis Japonesa",
-                "color": "#ff9900"  # Naranja
-            }
-        }
-        
-        return mosquito_info.get(nombre_mosquito, {
-            "nivel": "DESCONOCIDO",
-            "enfermedades": "No disponible",
-            "color": "#ffffff"
-        })
+
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ex = MosquitoApp()
-    ex.show()
-    sys.exit(app.exec_())
+    app = MosquitoApp()
+    app.mainloop()
